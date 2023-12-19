@@ -38,16 +38,26 @@ function shuffle(array) {
     return array;
 }
 
-function focus(elem) {
-    var y_center = (window.innerHeight / 2) + window.scrollY;
-    var x_center = window.innerWidth / 2
-    elem.style.left = intToPixels(x_center - (elem.offsetWidth / 2));
-    elem.style.top = intToPixels(y_center - (elem.offsetHeight / 2) - 20);
-    elem.style.zIndex = 1000;
-    for (var q=0; q < messages.length; q++) {
-        if (messages[q] != elem) {
-            messages[q].style.opacity = "0.25";
+function focus() {
+    console.log("focus fired");
+    if (focused_state == false) {
+        focused_elem = this;
+        focused_left = this.style.left;
+        focused_top = this.style.top;
+        focused_z = this.style.zIndex;
+        var y_center = (window.innerHeight / 2) + window.scrollY;
+        var x_center = window.innerWidth / 2;
+        this.style.transition = "all 1s";
+        this.style.left = intToPixels(x_center - (this.offsetWidth / 2));
+        this.style.top = intToPixels(y_center - (this.offsetHeight / 2) - 20);
+        this.style.zIndex = 1000;
+        for (var q=0; q < messages.length; q++) {
+            if (messages[q] != this) {
+                messages[q].style.opacity = "0.25";
+            }
         }
+        focused_state = true;
+        focus_fired = true;
     }
 }
 
@@ -58,6 +68,30 @@ function randItem(list) {
 function testFunc() {
     console.log(this.innerText);
 }
+
+function antiFocus() {
+    if (focused_state == true) {
+        focused_elem.style.transition = "all 1s";
+        focused_elem.style.top = focused_top;
+        focused_elem.style.left = focused_left;
+        focused_elem.style.zIndex = focused_z;
+        for (var q=0; q < messages.length; q++) {
+            messages[q].style.opacity = "1";
+        }
+        focused_state = false;
+    }
+}
+
+function clamp(x,min,max) {
+    return Math.min(Math.max(x,min),max)
+}
+
+var focused_elem = null;
+var focused_left = null;
+var focused_top = null;
+var focused_z = null;
+var focused_state = false;
+var focus_fired = false;
 
 /* document.getElementsByTagName('body')[0].style.overflow = 'hidden'; */
 
@@ -70,6 +104,15 @@ for (var key in data) {
 }
 
 shuffle(data_indices);
+
+
+document.onclick = function() {
+    if (focus_fired) {
+        focus_fired = false;
+    } else {
+        antiFocus();
+    }
+}
 
 var z_counter = 0;
 for (var z=0; z < data_indices.length; z++) {
@@ -86,30 +129,22 @@ for (var z=0; z < data_indices.length; z++) {
         new_message_obj.style.backgroundColor = "black";
         new_message_obj.style.color = "white";
     }
-    new_message_obj.onclick = testFunc;
+    new_message_obj.onclick = focus;
 }
-
+var mid_screen = screen.width / 2;
+var screen_variance = screen.width / 4;
 var messages = document.querySelectorAll(".message");
 for (var j=0; j < messages.length; j++) {
     var item_height = messages[j].clientHeight;
     item_height = parseInt(item_height);
-    messages[j].style.top = intToPixels(randomIntInRange(500,5000) - (item_height / 2));
+    messages[j].style.top = intToPixels(clamp((randomIntInRange(0,4000) - (item_height / 2)),0,4000));
     messages[j].style.width = intToPixels(randomIntInRange(500,1000));
     var item_width = messages[j].style.width;
     item_width = parseInt(item_width);
     var max_position = screen.width - item_width;
-    var mid_screen = screen.width / 2;
-    messages[j].style.left = intToPixels((mid_screen + randomIntInRange(-300,300)) - (item_width / 2));
+    messages[j].style.left = intToPixels((mid_screen + randomIntInRange(-screen_variance,screen_variance)) - (item_width / 2));
     var zdex = randomIntInRange(0,100);
 }
-
-/*
-addEventListener("click", (event) => {
-    focus(randItem(messages));
-});
-*/
-
-
 
 var scroll_prev = window.scrollY;
 document.addEventListener('scroll', function(e){
@@ -122,3 +157,5 @@ document.addEventListener('scroll', function(e){
         message_obj.style.top = intToPixels(curr_top - ((scroll_amount * (zdex / z_counter))));
     }
 }, true);
+
+
