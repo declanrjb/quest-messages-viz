@@ -1,8 +1,10 @@
 .message {
     font-family: 'Times New Roman', Times, serif;
-    font-size: 1.5em;
-    text-shadow: 1px 1px 2px grey;
+    font-size: 2em;
+    box-shadow: 1px 1px 10px black;
     position: absolute;
     float: left;
     width: 300px;
+    background-color: #FFFFFF;
+    padding: 20px;
 }
